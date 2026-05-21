@@ -1,94 +1,94 @@
 # Simple C/S Architecture Project
 
-一个基于C语言实现的高性能聊天服务器/客户端系统，采用epoll多线程架构，支持高并发场景。
+A high-performance chat server/client system implemented in C language, using epoll multi-threaded architecture to support high-concurrency scenarios.
 
-## 项目结构
+## Project Structure
 
 ```
 .
-├── server.c          # 服务器端主程序
-├── client.c          # 客户端程序
-├── bench_test.c      # 压力测试工具
-├── CMakeLists.txt    # CMake构建配置
-└── build/            # 构建输出目录
+├── server.c          # Server main program
+├── client.c          # Client program
+├── bench_test.c      # Stress testing tool
+├── CMakeLists.txt    # CMake build configuration
+└── build/            # Build output directory
 ```
 
-## 核心设计
+## Core Design
 
-### 服务器 (server.c)
+### Server (server.c)
 
-**架构特点：**
-- 多线程Reactor模式，使用epoll进行I/O多路复用
-- 默认4个工作线程，支持最多20000并发连接
-- 环形缓冲区（ring buffer）管理数据读写
-- socketpair实现主线程与工作线程间通信
+**Architecture Features:**
+- Multi-threaded Reactor pattern with epoll for I/O multiplexing
+- Default 4 worker threads, supporting up to 20,000 concurrent connections
+- Ring buffer management for data read/write
+- Socketpair for communication between main thread and worker threads
 
-**数据结构：**
-- `ringbuf_t` - 环形缓冲区，高效管理网络I/O
-- `client_t` - 客户端状态管理（文件描述符、状态机、读写缓冲区）
-- `worker_ctx_t` - 工作线程上下文（epoll实例、客户端列表）
-- `user_t` - 用户信息（用户名、密码、在线状态、群组列表）
-- `group_t` - 群组信息（成员列表、创建者）
+**Data Structures:**
+- `ringbuf_t` - Ring buffer for efficient network I/O management
+- `client_t` - Client state management (file descriptor, state machine, read/write buffers)
+- `worker_ctx_t` - Worker thread context (epoll instance, client list)
+- `user_t` - User information (username, password, online status, group list)
+- `group_t` - Group information (member list, creator)
 
-**功能支持：**
-- 用户注册与登录
-- 私聊消息
-- 群组创建、加入、群发消息
-- 在线用户列表查询
-- 连接超时检测（300秒）
+**Features:**
+- User registration and login
+- Private messaging
+- Group creation, joining, and broadcasting
+- Online user list query
+- Connection timeout detection (300 seconds)
 
-**配置参数：**
-- `PORT` - 服务器端口（默认12345）
-- `MAX_EVENTS` - epoll最大事件数（1024）
-- `MAX_CLIENTS` - 最大客户端数（20000）
-- `THREAD_COUNT` - 工作线程数（4）
-- `BUFFER_SIZE` - 缓冲区大小（4096字节）
+**Configuration Parameters:**
+- `PORT` - Server port (default 12345)
+- `MAX_EVENTS` - Maximum epoll events (1024)
+- `MAX_CLIENTS` - Maximum clients (20,000)
+- `THREAD_COUNT` - Worker threads (4)
+- `BUFFER_SIZE` - Buffer size (4096 bytes)
 
-### 客户端 (client.c)
+### Client (client.c)
 
-**功能特性：**
-- 非阻塞I/O + select多路复用
-- 自动重连机制
-- 交互式命令行界面
-- TCP_NODELAY优化低延迟
+**Features:**
+- Non-blocking I/O + select multiplexing
+- Auto-reconnect mechanism
+- Interactive command-line interface
+- TCP_NODELAY for low latency optimization
 
-**支持命令：**
-- `r <用户名> <密码>` - 注册新账号
-- `l <用户名> <密码>` - 登录
-- `p <用户> <消息>` - 发送私信
-- `gc <组名>` - 创建群组
-- `gj <组名>` - 加入群组
-- `gm <组名> <消息>` - 群发消息
-- `gl` - 列出已加入的群组
-- `ul` - 列出在线用户
-- `logout` - 登出
-- `quit/exit` - 退出
+**Supported Commands:**
+- `r <username> <password>` - Register new account
+- `l <username> <password>` - Login
+- `p <user> <message>` - Send private message
+- `gc <groupname>` - Create group
+- `gj <groupname>` - Join group
+- `gm <groupname> <message>` - Group broadcast
+- `gl` - List joined groups
+- `ul` - List online users
+- `logout` - Logout
+- `quit/exit` - Exit
 
-### 压力测试工具 (bench_test.c)
+### Stress Testing Tool (bench_test.c)
 
-**测试模式：**
-- `conn` - 连接风暴：测试TCP连接建立速率
-- `login` - 登录风暴：测试用户注册/登录吞吐量
-- `ping` - RTT延迟测试：测量往返延迟分布
-- `msg` - 消息互发测试：测试私聊消息吞吐量
-- `stress` - 混合压力测试：连接→登录→发消息→退出→重连循环
+**Test Modes:**
+- `conn` - Connection storm: Test TCP connection establishment rate
+- `login` - Login storm: Test user registration/login throughput
+- `ping` - RTT latency test: Measure round-trip delay distribution
+- `msg` - Message exchange test: Test private message throughput
+- `stress` - Mixed stress test: Connection → Login → Message → Exit → Reconnect cycle
 
-**使用示例：**
+**Usage Example:**
 ```bash
 ./bench_test -s 127.0.0.1 -p 12345 -t stress -n 5000 -c 200 -d 60
 ```
 
-**参数说明：**
-- `-s` - 服务器地址
-- `-p` - 服务器端口
-- `-t` - 测试类型
-- `-n` - 总连接数
-- `-c` - 并发连接数
-- `-d` - 测试持续时间（秒）
+**Parameter Description:**
+- `-s` - Server address
+- `-p` - Server port
+- `-t` - Test type
+- `-n` - Total connections
+- `-c` - Concurrent connections
+- `-d` - Test duration (seconds)
 
-## 编译与运行
+## Compilation and Running
 
-### 编译
+### Compilation
 
 ```bash
 mkdir build && cd build
@@ -96,47 +96,47 @@ cmake ..
 make
 ```
 
-### 运行服务器
+### Run Server
 
 ```bash
 ./server
 ```
 
-### 运行客户端
+### Run Client
 
 ```bash
 ./client
 ```
 
-### 运行压力测试
+### Run Stress Test
 
 ```bash
 ./bench_test -s 127.0.0.1 -p 12345 -t ping -n 1000 -c 50 -d 30
 ```
 
-## 技术栈
+## Technology Stack
 
-- **语言**: C99
-- **构建系统**: CMake 3.10+
-- **网络**: Linux epoll, POSIX sockets
-- **并发**: pthreads
-- **编译优化**: -O2
+- **Language**: C99
+- **Build System**: CMake 3.10+
+- **Network**: Linux epoll, POSIX sockets
+- **Concurrency**: pthreads
+- **Compilation Optimization**: -O2
 
-## 依赖
+## Dependencies
 
-- Linux操作系统（依赖epoll）
-- GCC编译器
+- Linux operating system (epoll dependency)
+- GCC compiler
 - CMake 3.10+
-- pthread库
+- pthread library
 
-## 性能指标
+## Performance Metrics
 
-服务器设计目标：
-- 支持20000并发连接
-- 4个工作线程并行处理
-- 每个worker最多5500连接
-- 300秒连接超时检测
+Server design targets:
+- Support 20,000 concurrent connections
+- 4 worker threads for parallel processing
+- Maximum 5,500 connections per worker
+- 300-second connection timeout detection
 
-## 许可证
+## License
 
-本项目仅供学习和研究使用。
+This project is for learning and research purposes only.
