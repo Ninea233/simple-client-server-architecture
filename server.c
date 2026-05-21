@@ -945,17 +945,12 @@ int main(int argc, char *argv[]) {
     }
     init_workers();
     server_start_time = time(NULL);
-    {
-        struct rlimit rl;
-        rlim_t fd_limit = 0;
-        if (getrlimit(RLIMIT_NOFILE, &rl) == 0) fd_limit = rl.rlim_cur;
-        if (!(argc >= 2 && strcmp(argv[1], "-d") == 0)) {
-            printf("Server started on port %d, stats on port %d, workers %d, fd_limit=%lu\n", PORT, STATS_PORT,
-                   THREAD_COUNT, (unsigned long)fd_limit);
-        } else {
-            syslog(LOG_INFO, "Server started on port %d, workers %d, fd_limit=%lu", PORT, THREAD_COUNT,
-                   (unsigned long)fd_limit);
-        }
+    if (!(argc >= 2 && strcmp(argv[1], "-d") == 0)) {
+        printf("Server started on port %d, stats on port %d, workers %d, fd_limit=%lu\n", PORT, STATS_PORT,
+               THREAD_COUNT, (unsigned long)fd_limit);
+    } else {
+        syslog(LOG_INFO, "Server started on port %d, workers %d, fd_limit=%lu", PORT, THREAD_COUNT,
+               (unsigned long)fd_limit);
     }
     int main_epoll = epoll_create1(0);
     struct epoll_event ev, events[2];
